@@ -4,6 +4,10 @@ import cors from 'cors';
 import fs from 'fs';
 import path from 'path';
 import { v4 as uuid } from 'uuid';
+import dotenv from 'dotenv';
+
+// Load environment variables from .env file
+dotenv.config();
 
 const app = express();
 const PORT = process.env.PORT || 3000;
@@ -17,6 +21,15 @@ let boxes = fs.existsSync(boxesFile) ? JSON.parse(fs.readFileSync(boxesFile)) : 
 
 function saveBoxes() {
   fs.writeFileSync(boxesFile, JSON.stringify(boxes, null, 2));
+}
+
+// Middleware to check password for admin routes
+function checkAdminPassword(req, res, next) {
+  const password = req.headers['admin-password'];
+  if (password === process.env.ADMIN_PASSWORD) {
+    return next();
+  }
+  res.status(403).json({ error: 'Unauthorized' });
 }
 
 app.post('/api/upload', upload.single('file'), (req, res) => {
@@ -61,17 +74,13 @@ app.post('/api/flag/:id', (req, res) => {
   res.json({ success: true });
 });
 
-app.listen(PORT, () => {
-  console.log(`Server running on port ${PORT}`);
-});
-// Get all flagged boxes
-app.get('/api/admin/flags', (req, res) => {
+// Admin routes with password protection
+app.get('/api/admin/flags', checkAdminPassword, (req, res) => {
   const flagged = boxes.filter(b => b.isFlagged);
   res.json(flagged);
 });
 
-// Unflag (approve) a box
-app.post('/api/admin/unflag/:id', (req, res) => {
+app.post('/api/admin/unflag/:id', checkAdminPassword, (req, res) => {
   const box = boxes.find(b => b.id === req.params.id);
   if (!box) return res.status(404).json({ error: 'Box not found' });
   box.isFlagged = false;
@@ -79,8 +88,7 @@ app.post('/api/admin/unflag/:id', (req, res) => {
   res.json({ success: true });
 });
 
-// Delete a box completely
-app.delete('/api/admin/delete/:id', (req, res) => {
+app.delete('/api/admin/delete/:id', checkAdminPassword, (req, res) => {
   const index = boxes.findIndex(b => b.id === req.params.id);
   if (index === -1) return res.status(404).json({ error: 'Box not found' });
 
@@ -91,4 +99,8 @@ app.delete('/api/admin/delete/:id', (req, res) => {
 
   saveBoxes();
   res.json({ success: true });
+});
+
+app.listen(PORT, () => {
+  console.log(`Server running on port ${PORT}`);
 });
