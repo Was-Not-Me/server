@@ -1,1 +1,5 @@
+# .env file should not be committed
 .env
+
+# Node.js dependencies
+node_modules/
