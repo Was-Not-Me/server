@@ -1,11 +1,11 @@
 // server.js
-import express = require('express');
-import multer = require('multer');
-import fs = require('fs');
-import cors = require('cors');
-import app = express();
-import PORT = process.env.PORT || 3000;
+import express from 'express';
+import multer from 'multer';
+import fs from 'fs';
+import cors from 'cors';
 
+const app = express();
+const PORT = process.env.PORT || 3000;
 app.use(cors());
 app.use(express.static('uploads'));
 app.use(express.json());
