@@ -1,8 +1,9 @@
 // server.js
-const express = require('express');
-const multer = require('multer');
-const fs = require('fs');
-const cors = require('cors');
+import express from 'express';
+import multer from 'multer';
+import fs from 'fs';
+import cors from 'cors';
+
 const app = express();
 const PORT = process.env.PORT || 3000;
 
@@ -33,11 +34,17 @@ app.get('/api/box', (req, res) => {
   res.json(box);
 });
 
-// Upload new box
+// Upload new box (supports image, audio, code)
 app.post('/api/box', upload.single('file'), (req, res) => {
-  const { type } = req.body;
-  const fileUrl = `${req.protocol}://${req.get('host')}/${req.file.filename}`;
-  const box = { type, url: fileUrl };
+  const { type, code } = req.body;
+  const fileUrl = req.file ? `${req.protocol}://${req.get('host')}/${req.file.filename}` : null;
+
+  let box = { type, url: fileUrl };
+
+  if (type === 'code' && code) {
+    box.code = code; // Save code directly
+  }
+
   boxes.push(box);
   fs.writeFileSync('boxes.json', JSON.stringify(boxes, null, 2));
   res.json({ success: true, box });
