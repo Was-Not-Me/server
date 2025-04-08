@@ -1,10 +1,10 @@
 // server.js
-const express = require('express');
-const multer = require('multer');
-const fs = require('fs');
-const cors = require('cors');
-const app = express();
-const PORT = process.env.PORT || 3000;
+import express = require('express');
+import multer = require('multer');
+import fs = require('fs');
+import cors = require('cors');
+import app = express();
+import PORT = process.env.PORT || 3000;
 
 app.use(cors());
 app.use(express.static('uploads'));
